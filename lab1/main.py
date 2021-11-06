@@ -28,6 +28,9 @@ def genEmpMat(matrix):
         val = toFixed(uniform(0, 1.00000), 5)
         st, col = findCell(matrix, val)
         emp_mat[st][col] += 1
+    for i in range(len(emp_mat)):
+        for j in range(len(emp_mat[i])):
+            emp_mat[i][j] /= SAMPLE
     return emp_mat
 
 def findCell(matrix, val):
@@ -39,16 +42,39 @@ def findCell(matrix, val):
                 return i, j
 
 def buildPlot(rand_matrix, emp_mat):
-    rand_matrix_one = np.reshape(rand_matrix, (1, len(Y_ARR) * len(X_ARR)))[0]
-    emp_mat_one = np.reshape(emp_mat, (1, len(Y_ARR) * len(X_ARR)))[0]
+    x_prob_rand_arr = []
+    for i in range(len(X_ARR)):
+        x_prob_rand_arr.append(sum(rand_matrix[:,i])) 
 
-    rand_matrix_one_str = [str(i) for i in rand_matrix_one]
+    y_prob_rand_arr = []
+    for j in range(len(Y_ARR)):
+        y_prob_rand_arr.append(sum(rand_matrix[j])) 
 
-    fig, ax = plt.subplots()
+    x_prob_emp_arr = []
+    for i in range(len(X_ARR)):
+        x_prob_emp_arr.append(sum(emp_mat[:,i])) 
 
-    ax.bar(rand_matrix_one_str, emp_mat_one)
-    fig.set_figwidth(12)
-    fig.set_figheight(6)    
+    y_prob_emp_arr = []
+    for j in range(len(Y_ARR)):
+        y_prob_emp_arr.append(sum(emp_mat[j])) 
+
+    fig, ax = plt.subplots(2, 2)
+
+    ax[0][0].bar(X_ARR, x_prob_rand_arr)
+    ax[0][0].set_title("Probality x(teor)")
+
+    ax[0][1].bar(Y_ARR, y_prob_rand_arr)
+    ax[0][1].set_title("Probality y(teor)")
+
+    ax[1][0].bar(X_ARR, x_prob_emp_arr)
+    ax[1][0].set_title("Probality x(emp)")
+
+    ax[1][1].bar(Y_ARR, y_prob_emp_arr)
+    ax[1][1].set_title("Probality y(emp)")
+
+    fig.set_figheight(8)
+    fig.set_figwidth(14)
+
     plt.show()
 
 def accurMathExp(matrix, arr, ch):
@@ -58,14 +84,11 @@ def accurMathExp(matrix, arr, ch):
             temp += sum(matrix[i]) * arr[i]
     else:
         for i in range(len(arr)):
-            str_sum = 0
-            for j in range(len(matrix)):
-                str_sum += matrix[j][i]
-            temp += str_sum * arr[i]
+            temp += sum(matrix[:,i]) * arr[i]
     return temp / SAMPLE
 
 def accurVari(arr, math_exp_arr):
-    return sum([(var - math_exp_arr) ** 2 for var in arr])/len(arr)
+    return sum([(var - math_exp_arr) ** 2 for var in arr])/SAMPLE
 
 def intervalMathExp(m, d):
     temp = STUDENT_VAL * sqrt(d / SAMPLE)
@@ -77,13 +100,13 @@ def intervalVari(d):
 
 def coeffCov(m_x, m_y, d_x, d_y):
     cov = sum([val - m_x for val in X_ARR]) * sum([val - m_y for val in Y_ARR])
-    return cov / sqrt(len(X_ARR) * len(Y_ARR) * d_x * d_y)
+    return cov / sqrt(len(X_ARR) * len(Y_ARR) * d_x * d_y * SAMPLE * SAMPLE)
 
 def critPirs(t_mat, e_mat):
     crit_pirs_y = 0
     crit_pirs_x = 0
     for k in range(len(Y_ARR)):
-        crit_pirs_y += ((sum(t_mat[k]) - (sum(e_mat[k]) / SAMPLE)) ** 2) / (sum(e_mat[k]) / SAMPLE)
+        crit_pirs_y += ((sum(t_mat[k]) - sum(e_mat[k])) ** 2) / sum(e_mat[k])
 
     for i in range(len(X_ARR)):
         str_sum_t = 0
@@ -91,7 +114,7 @@ def critPirs(t_mat, e_mat):
         for j in range(len(Y_ARR)):
             str_sum_t += t_mat[j][i]
             str_sum_e += e_mat[j][i]
-        crit_pirs_x += ((str_sum_t - (str_sum_e / SAMPLE)) ** 2) / (str_sum_e / SAMPLE)
+        crit_pirs_x += ((str_sum_t - str_sum_e) ** 2) / str_sum_e
     return crit_pirs_x, crit_pirs_y
 
 def checkPirs(crit_pirs):
