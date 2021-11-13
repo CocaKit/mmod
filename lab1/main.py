@@ -13,7 +13,7 @@ EPS = 0.95 #0.05
 STUDENT_VAL = 1.647
 XI_VAL_1 = 658.1
 XI_VAL_2 = 544.2
-XI_CRIT_VAL = 3.841
+XI_CRIT_VAL = 0.0039 #3.841
 
 def toFixed(numObj, digits=0):
     return float(f"{numObj:.{digits}f}")
@@ -85,10 +85,10 @@ def accurMathExp(matrix, arr, ch):
     else:
         for i in range(len(arr)):
             temp += sum(matrix[:,i]) * arr[i]
-    return temp / SAMPLE
+    return temp
 
 def accurVari(arr, math_exp_arr):
-    return sum([(var - math_exp_arr) ** 2 for var in arr])/SAMPLE
+    return sum([(var - math_exp_arr) ** 2 for var in arr]) / (len(arr) - 1)
 
 def intervalMathExp(m, d):
     temp = STUDENT_VAL * sqrt(d / SAMPLE)
@@ -120,6 +120,28 @@ def critPirs(t_mat, e_mat):
 def checkPirs(crit_pirs):
     return crit_pirs < XI_CRIT_VAL
          
+def staticResearch(matrix):
+    x_accur_math_exp = accurMathExp(matrix, X_ARR, "x")
+    y_accur_math_exp = accurMathExp(matrix, Y_ARR, "y")
+    print("Accurate math expection x,y:", x_accur_math_exp, y_accur_math_exp)
+
+    x_accur_var = accurVari(X_ARR, x_accur_math_exp)
+    y_accur_var = accurVari(Y_ARR, y_accur_math_exp)
+    print("Accurate variation x, y:", x_accur_var, y_accur_var)
+
+    interval_math_x = intervalMathExp(x_accur_math_exp, x_accur_var)
+    print("Interval math expection x:", interval_math_x)
+    interval_math_y = intervalMathExp(y_accur_math_exp, y_accur_var)
+    print("Interval math expection y:", interval_math_y)
+
+    interval_vari_x = intervalVari(x_accur_var)
+    print("Interval variation x:", interval_vari_x)
+    interval_vari_y = intervalVari(y_accur_var)
+    print("Interval variation y:", interval_vari_y)
+
+    coeff_cov = coeffCov(x_accur_math_exp, y_accur_math_exp, x_accur_var, y_accur_var)
+    print("covariance coefficient:", coeff_cov)
+
 rand_matrix = genRandMat()
 emp_mat = genEmpMat(rand_matrix)
 print("Theoretical matrix:")
@@ -129,24 +151,16 @@ print(emp_mat)
 
 buildPlot(rand_matrix, emp_mat)
 
-x_accur_math_exp = accurMathExp(emp_mat, X_ARR, "x")
-y_accur_math_exp = accurMathExp(emp_mat, Y_ARR, "y")
-print("Accurate math expection x,y:", x_accur_math_exp, y_accur_math_exp)
-x_accur_var = accurVari(X_ARR, x_accur_math_exp)
-y_accur_var = accurVari(Y_ARR, y_accur_math_exp)
-print("Accurate variation x, y:", x_accur_var, y_accur_var)
-interval_math_x = intervalMathExp(x_accur_math_exp, x_accur_var)
-print("Interval math expection x:", interval_math_x)
-interval_math_y = intervalMathExp(y_accur_math_exp, y_accur_var)
-print("Interval math expection y:", interval_math_y)
-interval_vari_x = intervalVari(x_accur_var)
-print("Interval variation x:", interval_vari_x)
-interval_vari_y = intervalVari(y_accur_var)
-print("Interval variation y:", interval_vari_y)
-coeff_cov = coeffCov(x_accur_math_exp, y_accur_math_exp, x_accur_var, y_accur_var)
-print("covariance coefficient:", coeff_cov)
+print("-------------------------------")
+print("Teoretical matrix static research")
+staticResearch(rand_matrix)
+
+print("-------------------------------")
+print("Emperical matrix static research")
+staticResearch(emp_mat)
 
 pirs_x, pirs_y = critPirs(rand_matrix, emp_mat)
+print("-------------------------------")
 print("Pearson test x,y:", pirs_x, pirs_y)
 check_x = checkPirs(pirs_x)
 check_y = checkPirs(pirs_y)
