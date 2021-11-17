@@ -1,6 +1,7 @@
 from random import *
 import sys
 import numpy as np
+import scipy.stats
 import matplotlib.pyplot as plt
 from math import sqrt
 
@@ -13,7 +14,6 @@ EPS = 0.95 #0.05
 STUDENT_VAL = 1.647
 XI_VAL_1 = 658.1
 XI_VAL_2 = 544.2
-XI_CRIT_VAL = 0.0039 #3.841
 
 def toFixed(numObj, digits=0):
     return float(f"{numObj:.{digits}f}")
@@ -117,8 +117,8 @@ def critPirs(t_mat, e_mat):
         crit_pirs_x += ((str_sum_t - str_sum_e) ** 2) / str_sum_e
     return crit_pirs_x, crit_pirs_y
 
-def checkPirs(crit_pirs):
-    return crit_pirs < XI_CRIT_VAL
+def checkPirs(crit_pirs, n):
+    return crit_pirs < scipy.stats.chi2.ppf(1 - EPS, df = n - 3)
          
 def staticResearch(matrix):
     x_accur_math_exp = accurMathExp(matrix, X_ARR, "x")
@@ -162,6 +162,6 @@ staticResearch(emp_mat)
 pirs_x, pirs_y = critPirs(rand_matrix, emp_mat)
 print("-------------------------------")
 print("Pearson test x,y:", pirs_x, pirs_y)
-check_x = checkPirs(pirs_x)
-check_y = checkPirs(pirs_y)
+check_x = checkPirs(pirs_x, COL)
+check_y = checkPirs(pirs_y, ST)
 print("there is no reason to reject the hypothesis x,y:", check_x, check_y)
